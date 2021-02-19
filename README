@@ -1,0 +1,124 @@
+
+Auteurs:
+
+CHELIKH Idriss, 3704957
+REMIR Denis, 3670003
+
+Vous trouverez les dossiers suivants:
+
+ - config
+ - launch
+ - rviz
+ - scripts
+ - urdf
+ - worlds
+
+
+Chaque dossier contient les fichiers suivants:
+
+config: regroupe toutes les configurations nécessaires au fonctionnement du robot.
+
+	-robot_with_sensors.yaml:
+	configuration des paramètres du robot with sensors. On se servira du turtlebot burger dans ce projet plutôt que du robot with sensors
+
+	-turtlebot3_burger.yaml:
+	configuration des paramètres du turtlebot burger, avec les paramètres du moteur pour sa vitesse de déplacement, de la caméra qui servira au suivi de ligne et du lidar pour repérer les obstacles/murs à suivre etc.
+
+---------------------------------------------------------------------
+
+launch: regroupe tous les fichiers launch du projet.
+
+	-gazebo.launch:
+	crée un monde dans gazebo et spawn un robot selon sa configuration URDF avec une position et orientation initiale.
+
+	-rviz.launch:
+	affiche dans rviz un robot selon sa configuration URDF.
+CHALLENGE 1:
+	-challenge1_task1.launch:
+	fait apparaitre le robot dans le monde du challenge 1 devant la ligne de gauche. Le robot fait un suivi de ligne à vitesse constante jusqu'à son arrêt au niveau de la zone verte .
+
+	-challenge1_task2.launch:
+	fait apparaitre le robot dans le monde du challenge 1 devant la ligne du milieu. Le robot fait un suivi de ligne bicolore, modifiant sa vitesse selon la couleur de la ligne et s'arrête au niveau de la zone verte. Pour une ligne rouge, le robot diminue sa vitesse de moitié par rapport au suivi d'une ligne jaune.
+
+	-challenge1_task3.launch:
+	fait apparaitre le robot dans le monde du challenge 1 devant la ligne de droite. Le robot fait un suivi de ligne aux virages serrés et présentant des discontinuités. Il adapte sa vitesse de déplacement selon la couleur de la ligne suivie et selon la courbe du virage, puis s'arrête au niveau de la zone verte.
+
+
+CHALLENGE 2:
+	-challenge2_task1:
+	fait apparaitre le robot au centre du monde du challenge 2, orienté face à un mur. Le robot avance vers le mur et s'arrête devant le mur, à la distance de sécurité paramétrée (reprise de l'emergency stop du tp2).
+
+	-challenge2_task2:
+	fait apparaitre le robot au centre du monde du challenge 2, orienté face à un mur avancant d'avant en arrière. Le robot maintient une distance constante avec le mur, avancant et reculant en même temps que celui-ci par asservissement avec cette distance.
+
+	-challenge2_task3:
+	fait apparaitre le robot au centre du monde du challenge 2. Le robot doit maintenir une distance fixée avec un mur pouvant bouger dans toutes les directions et venir de tous côtés du robot.
+CHALLENGE 3:
+	-challenge3_task1:
+	fait apparaitre le robot dans le monde du challenge3, devant une ligne à suivre. La ligne est obstruée par des murs, le premier s'ouvrant à intervalle de temps régulier et le second qui doit être ouvert par le robot en publiant un message sur le topic adapté. Le robot est capable de se déplacer en suivant la ligne et en s'arrêtant devant les obstacles pour s'arrêter à la fin de la ligne.
+
+	-challenge3_task2:
+	Le robot effectue le même suivi de ligne que le challenge2_task3 pour ensuite naviguer de le couloir en utilisant son LIDAR et s'arrêter au bout du couloir.
+
+	-challenge3_task3:
+	le robot réalise les tâches du challenge3_task1 et du challenge3_task2. Il se déplace ensuite en suivant une ligne, qui se sépare à plusieurs endroit. Le robot est capable de choisir un chemin et de revenir sur ses pas si son choix est faux, jusqu'à atteindre la fin du parcours. 
+
+
+---------------------------------------------------------------------
+
+rviz: visualisation rviz.
+
+	-configuration.rviz:
+	configuration pour la visualisation rviz du robot.
+
+---------------------------------------------------------------------
+
+scripts: contient tous les programmes python utilisés regroupés dans les dossiers nommés en fonction des challenges où ils sont utilisés.
+
+CHALLENGE 1:
+	- challenge1.py:
+	Le programme récupère les images envoyées par la caméra du robot qui est un subscriber, les analyse en utilisant notamment la bibliothèque OpenCV et agit sur les déplacements du robot en communiquant avec le moteur du robot qui est un publisher. Le programme peut donc choisir la vitesse de déplacement du robot en influant le publisher, suivre la ligne en identifiant son centre et en corrigeant sa trajectoire et son orientation par rapport à ce centre. En reconnaissant les couleurs de la ligne, le robot choisit une vitesse de déplacement rapide si la ligne est jaune, plus lente si la ligne est rouge et s'arrête totalement s'il repère du vert, symbolisant sa zone d'arrivée.
+
+	- cam_detection.py
+	Ce script est appelé par le programme challenge1.py, celui-ci est chargé du traitement d'image et du calcul de la vitesse linéaire et angulaire. Il est important de différencier ces deux codes car si cam_detection.py se charge de l'intégralité du traitement d'image, challenge1.py lui se charge de la publication sur les topics du robot et de l'acquisition de données. Comme dit précédemment, le suivi de ligne se fait en fonction du centre de l'image, mais plus précisemment en fonction du moment d'image de la couleur de la ligne à suivre. C'est ainsi qu'il adapte sa vitesse en fonction de la courbe de la ligne. La capacité du robot à suivre la ligne peut se contrôler grâce aux gains de commande klinear, kangular1 et kangular2.
+ 
+
+CHALLENGE 2:
+	-challenge2_task1.py:
+	Le programme utlise le publisher cmd_vel pour faire avancer le robot à une vitesse constante vers le mur. Il récupère les informations du lidar fournit par le subscriber scan. Tant que la distance entre le mur et le robot, évaluée par le lidar à l'angle 0 (soit devant le robot), est supérieure à la distance d'arrêt choisie, le robot continue d'avancer. En revanche quand cette distance est atteinte, le robot s'arrête en mettant à zero par le biais du publisher. Les vitesses du robot (en x, y, z et rotations) sont définies en passant par le publisher cmd_vel.
+
+	-challenge2_task2.py:
+	Le programme utilise le publisher cmd_vel pour influer sur la vitesse du robot et donc sur sa position, et le subscriber scan qui retourne les information du lidar. Un asservissement (par correction proportionelle avec la distance mesurée par le lidar en face du robot) sur la vitesse est effectué pour que le robot maintienne une distance de sécurité avec le mur jusqu'à qu'il atteigne une distance de sécurité choisie entre lui et le mur. La distance séparant le robot et le mur est obtenue par le lidar. 
+	
+	-challenge2_task2_world_control.py:
+	Permet au mur dans le monde du challenge2 de se déplacer d'avant en arrière dans une direction.
+
+	-challenge2_task3.py:
+	Le programme utilise le publisher cmd_vel pour influer sur la vitesse du robot et donc sur sa position, et le le subscriber scan qui retourne les information du lidar. Le robot doit être capable de changer son orientation pour être face au mur lorsque celui ci se déplace autour du robot. Le robot étant face au mur, il peut modifier sa position pour se situer à la distance choisie entre lui et le mur. La vitesse du robot s'adapte en fonction du gain de commande donne en entree et de la distance le séparant du mur.
+	
+	-challenge2_task3_world_control.py:
+	Permet au mur dans le monde du challenge2 de se déplacer d'avant en arrière depuis une position aléatoire.
+
+CHALLENGE 3:
+	-challenge3a_world_control.py:
+	Controle la seconde porte du parcours, qui se comporte comme une porte de garage et s'ouvre si le robot envoie un message sur le topic responsable de son ouverture. 
+	
+	-challenge3b_world_control.py:
+	Controle la premiere porte qui agit comme un mur qui se lève et redescent à intervalle de temps régulier.
+
+	-challenge3_task1.py:
+	Le programme permet au robot d'avancer le long de la ligne jaune qu'il doit suivre. Lorsqu'il rencontre une porte, le robot lance un compteur. Si la porte disparait avant la limite du compteur, c'est qu'il s'agit de la première porte s'ouvrant d'elle même et le robot continue d'avancer. Si la porte est toujours présente après la limite du compteur, c'est qu'il s'agit de la seconde porte et le robot publie dans Garage_Door_Opener afin d'ouvrir la porte. La porte étant ouverte, il peut passer et finir son parcours.
+
+	-challenge3_task2.py:
+	Le programme réalise la tâche 1 de suivi de ligne et de passage des portes de garage. En quittant la ligne jaune pour entrer dans le couloir, le robot se place en configuration de guidage dans le couloir en utilisant son lidar. Le robot en utilisant le lidar va alors se positioner au milieu des deux murs en regardant à 60° et 300°. Une fois que les deux murs sont à équidistant du robot, il avance. Il applique cette méthode jusqu'à sortir du couloir.
+	
+---------------------------------------------------------------------
+
+urdf: regroupe les descriptions urdf des robots
+	
+	Les descriptions urdf des robots turtlebot burger et robot_with_sensors sont données et decrivent la géométrie des robots. Ces fichiers sont utilisés pour l'affichage rviz et gazebo des robots.
+
+---------------------------------------------------------------------
+
+worlds: regroupe les mondes étudiés dans les différents challenges.
+

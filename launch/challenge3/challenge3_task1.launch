@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <!-- load robot URDF description -->
+  <param name="robot_description" command="xacro --inorder $(find challenge_project)/urdf/turtlebot3_burger/turtlebot3_burger.urdf.xacro"/>
+
+
+  <!-- Initial position -->
+  <include file="$(find challenge_project)/launch/gazebo.launch">
+  <arg name="x" value="-1.05"/>
+  <arg name="y" value="0.4"/>
+  <arg name="z" value="0.0175"/>
+  <arg name="roll" value="0"/>
+  <arg name="pitch" value="0"/>
+  <arg name="yaw" value="4.71238898038"/>
+  <arg name="world" value="$(find challenge_project)/worlds/challenge3.world"/>
+  </include>
+  
+
+  <!-- Moving obstacle -->
+  <node   name="OBSTACLE" pkg="challenge_project" type ="challenge3b_world_control.py"/>
+  <!-- Garage  door -->
+  <node   name="DOOR" pkg="challenge_project" type ="challenge3a_world_control.py"/>
+  <!-- nodes -->
+  <param name="distance_stop" type="double" value="0.5"/>
+  <param name="speed_factor" type="double" value="3"/>
+  <node pkg="challenge_project" name="line_and_obstacle" type="challenge3_task1.py" required="true" output="screen"/>
+  <!-- uncomment below to see the camera view -->
+  <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/camera/image_raw" />
+  </node>
+
+</launch>
