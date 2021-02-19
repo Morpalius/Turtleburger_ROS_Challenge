@@ -1,0 +1,24 @@
+# general parameters:
+robot_name:           "turtlebot3_burger"
+
+# motors parameters:  
+motorsCommandTopic:   "cmd_vel"
+
+# camera parameters:
+cam_position:         [0.03,0.0,0.135]
+cam_orientation:      [0.0,0.610865238,0.0]
+cam_rate:             30.0
+cam_fov:              1.3962634
+cam_image_size:       [800,800]
+cam_range:            [0.02,300]
+imageTopicName:       "camera/image_raw"
+imageInfoTopicName:   "camera/camera_info"
+
+# lidar parameters:
+lds_scan_samples:     360
+lds_scan_resolution:  1
+lds_scan_angle:       [0.0,6.28319]
+lds_range:            [0.120,3.5]
+lds_range_resolution: 0.015
+ldsTopicName:         "scan"
+ldsFrameName:         "base_scan"
